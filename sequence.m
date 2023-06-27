@@ -13,7 +13,7 @@ classdef sequence
 			%            Your Name  1 Jan 20xx
 			s.data = data;
 			s.offset = offset;
-		end
+        end
 		
 	
 		function y = flip(x)
@@ -39,67 +39,77 @@ classdef sequence
 			% PLUS  Add x and y.
 			% Either x and y or both will be sequence structures
 			% Only one of them may be a number.
-			if (isa(x, 'double'))
-				% do something
-			elseif (isa(y, 'double'))
-				% do something
-			else
-				% do something
-			end
-			
-			% Create output sequence using new data and offset
-			z = sequence(data, offset);
-		end
-		
-		function z = minus(x, y)
-			% MINUS Subtract x and y.
-			% Either x and y or both will be sequence structures
-			% Only one of them may be a number.
-			
-			% Create output sequence using new data and offset
-			Lx = x.offset,length(x.data) - 1;
-            Ly = y.offset,length(y.data) - 1;
-            x_hat = [zeros(1,y.offset - x.offset) x.data zeros(1,Lx-Ly)];
-            y_hat = [zeros(1,x.offset-y.offset) y.data zeros(1,Ly-Lx)];
 
-            z_hat = x_hat - y_hat;
-            z_offset = min(x.offset,y.offset);
+    if ~ isa(x,'sequence')
+            z = sequence(x-y.data,y.offset);
+            z = trim(z);
+            return
 
-            z = sequence(z_hat,z,offset);
+  elseif ~ isa(y,'sequence')
+        z = sequence(x.data -y,x.offset);
+        z=trim(z);
+        return
+  end
 
+
+			Lx = x.offset;length(x.data) - 1;
+            Ly = y.offset;length(y.data) - 1;
+            x_hat = [zeros(1,x.offset - y.offset), x.data zeros(1,Ly+Lx)];
+            y_hat = [zeros(1,y.offset-x.offset), y.data zeros(1,Lx+Ly)];
+            z_hat = x_hat + y_hat;
+            z_offset = max(x.offset,y.offset);
+            z = sequence(z_hat,z_offset);
             z = trim(z);
         end
 
 
         function x = trim(x)
-            while x.data[1] == 0
+            while x.data(1) == 0
                 x.offset = x.offset + 1;
-                x.data[1] = [];
+                x.data(1) = [];
             end
-            while x.data[end] == 0
-                x.data[end] = [];
+            while x.data(end) == 0
+                x.data(end) = [];
 
-    end
-end
+            end
+        end
 
 
-if ~ isa(x,'sequence')
-    z = sequence(x-y.data,y.offset);
-    z = trim(z);
-    return z;
 
-else if ~ isa(y,'sequence')
+
+		function z = minus(x, y)
+           
+			% MINUS Subtract x and y.
+			% Either x and y or both will be sequence structures
+			% Only one of them may be a number.
+			
+			% Create output sequence using new data and offset
+          
+  if ~ isa(x,'sequence')
+            z = sequence(x-y.data,y.offset);
+            z = trim(z);
+            return
+
+  elseif ~ isa(y,'sequence')
         z = sequence(x.data -y,x.offset);
-        trim(z);
-        return z;
-end
+        z=trim(z);
+        return
+  end
 
 
-                  
+			Lx = x.offset;length(x.data) - 1;
+            Ly = y.offset;length(y.data) - 1;
+            x_hat = [zeros(1,x.offset - y.offset), x.data zeros(1,Ly-Lx)];
+            y_hat = [zeros(1,y.offset-x.offset), y.data zeros(1,Lx-Ly)];
+            z_hat = x_hat - y_hat;
+            z_offset = min(x.offset,y.offset);
+            z = sequence(z_hat,z_offset);
+            z = trim(z);
+        end
 
 
 		
-		function z = times(x, y)
+        function z = times(x, y)
 			% TIMES Multiply x and y (i.e. .*)/
 			% Either x and y or both will be sequence structures
 			% Only one of them may be a number.
@@ -108,6 +118,8 @@ end
 			z = sequence(data, offset);
 		end
 		
+
+
 		function stem(x)
 			% STEM Display a Matlab sequence, x, using a stem plot.
 		    Lix = x.offset + length(x.data)-1;
@@ -115,3 +127,4 @@ end
         end
 	end
 end
+
